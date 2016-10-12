@@ -1,5 +1,5 @@
 
-@version = "3.2"
+@version = "3.2.1"
 
 Pod::Spec.new do |s|
   s.name           = "DZNWebViewController"

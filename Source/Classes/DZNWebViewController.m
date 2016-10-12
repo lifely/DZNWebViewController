@@ -84,7 +84,10 @@ static char DZNWebViewControllerKVOContext = 0;
     self.webView.navDelegate = self;
     self.webView.scrollView.delegate = self;
     
-    [self.webView addObserver:self forKeyPath:@"loading" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext];
+  @try { [self.webView removeObserver:self forKeyPath:@"loading" context:&DZNWebViewControllerKVOContext]; }
+  @catch (NSException *exception) { }
+  @finally { [self.webView addObserver:self forKeyPath:@"loading" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext]; }
+
     self.completedInitialLoad = NO;
 }
 
@@ -448,12 +451,16 @@ static char DZNWebViewControllerKVOContext = 0;
 
 - (void)loadURL:(NSURL *)URL
 {
+    if (URL == nil) return ;
+
     NSURL *baseURL = [[NSURL alloc] initFileURLWithPath:URL.path.stringByDeletingLastPathComponent isDirectory:YES];
     [self loadURL:URL baseURL:baseURL];
 }
 
 - (void)loadURL:(NSURL *)URL baseURL:(NSURL *)baseURL
 {
+    if (URL == nil) return ;
+
     if ([URL isFileURL]) {
         NSData *data = [[NSData alloc] initWithContentsOfURL:URL];
         NSString *HTMLString = [[NSString alloc] initWithData:data encoding:NSStringEncodingConversionAllowLossy];
@@ -548,9 +555,17 @@ static char DZNWebViewControllerKVOContext = 0;
     self.navigationController.hidesBarsWhenVerticallyCompact = self.hideBarsWithGestures;
 
     if (self.hideBarsWithGestures) {
-        [self.navigationBar addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext];
-        [self.navigationBar addObserver:self forKeyPath:@"center" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext];
-        [self.navigationBar addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext];
+      @try { [self.navigationBar removeObserver:self forKeyPath:@"hidden" context:&DZNWebViewControllerKVOContext]; }
+      @catch (NSException *exception) { }
+      @finally { [self.navigationBar addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext]; }
+
+      @try { [self.navigationBar removeObserver:self forKeyPath:@"center" context:&DZNWebViewControllerKVOContext]; }
+      @catch (NSException *exception) { }
+      @finally { [self.navigationBar addObserver:self forKeyPath:@"center" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext]; }
+
+      @try { [self.navigationBar removeObserver:self forKeyPath:@"alpha" context:&DZNWebViewControllerKVOContext]; }
+      @catch (NSException *exception) { }
+      @finally { [self.navigationBar addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew context:&DZNWebViewControllerKVOContext]; }
     }
 
     if (!DZN_IS_IPAD && self.navigationController.toolbarHidden && self.toolbarItems.count > 0) {
@@ -860,7 +875,6 @@ static char DZNWebViewControllerKVOContext = 0;
     return NO;
 }
 
-
 #pragma mark - View lifeterm
 
 - (void)didReceiveMemoryWarning
@@ -875,28 +889,33 @@ static char DZNWebViewControllerKVOContext = 0;
 
 - (void)dealloc
 {
-    if (self.hideBarsWithGestures) {
-        [self.navigationBar removeObserver:self forKeyPath:@"hidden" context:&DZNWebViewControllerKVOContext];
-        [self.navigationBar removeObserver:self forKeyPath:@"center" context:&DZNWebViewControllerKVOContext];
-        [self.navigationBar removeObserver:self forKeyPath:@"alpha" context:&DZNWebViewControllerKVOContext];
-    }
-    [self.webView removeObserver:self forKeyPath:@"loading" context:&DZNWebViewControllerKVOContext];
-    
-    _backwardBarItem = nil;
-    _forwardBarItem = nil;
-    _stateBarItem = nil;
-    _actionBarItem = nil;
-    _progressView = nil;
-    
-    _backwardLongPress = nil;
-    _forwardLongPress = nil;
-    
-    _webView.scrollView.delegate = nil;
-    _webView.navDelegate = nil;
-    _webView.UIDelegate = nil;
-    _webView.scrollView.delegate = nil;
-    _webView = nil;
-    _URL = nil;
+    @try { [self.navigationBar removeObserver:self forKeyPath:@"hidden" context:&DZNWebViewControllerKVOContext]; }
+    @catch (NSException *exception) { }
+
+    @try { [self.navigationBar removeObserver:self forKeyPath:@"center" context:&DZNWebViewControllerKVOContext]; }
+    @catch (NSException *exception) { }
+
+    @try { [self.navigationBar removeObserver:self forKeyPath:@"alpha" context:&DZNWebViewControllerKVOContext]; }
+    @catch (NSException *exception) { }
+
+    @try { [self.webView removeObserver:self forKeyPath:@"loading" context:&DZNWebViewControllerKVOContext]; }
+    @catch (NSException *exception) { }
+
+    self.backwardBarItem = nil;
+    self.forwardBarItem = nil;
+    self.stateBarItem = nil;
+    self.actionBarItem = nil;
+    self.progressView = nil;
+
+    self.backwardLongPress = nil;
+    self.forwardLongPress = nil;
+
+    self.webView.scrollView.delegate = nil;
+    self.webView.navDelegate = nil;
+    self.webView.UIDelegate = nil;
+    self.webView = nil;
+
+    self.URL = nil;
 }
 
 @end
